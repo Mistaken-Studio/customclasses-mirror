@@ -10,10 +10,10 @@ namespace Mistaken.CustomClasses
     [UsedImplicitly]
     internal class PluginHandler : Plugin<Config>, IAutoUpdateablePlugin
     {
-        public override string Author { get; } = "Mistaken Devs";
-        public override string Name { get; } = "CustomClasses";
-        public override string Prefix { get; } = "MCustomClasses";
-        public override Version RequiredExiledVersion { get; } = new Version(5, 2, 2);
+        public override string Author => "Mistaken Devs";
+        public override string Name => "CustomClasses";
+        public override string Prefix  => "MCustomClasses";
+        public override Version RequiredExiledVersion  => new Version(5, 2, 2);
         internal static PluginHandler Instance { get; set; }
         public override void OnEnabled()
         {
