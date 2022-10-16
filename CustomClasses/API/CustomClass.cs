@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
@@ -12,6 +13,7 @@ using Mistaken.API;
 using Mistaken.API.Extensions;
 using Mistaken.API.GUI;
 using Mistaken.CustomClasses.API.Interfaces;
+using Mistaken.RoundLogger;
 using UnityEngine;
 using CustomInfoHandler = Mistaken.API.Handlers.CustomInfoHandler;
 
@@ -20,80 +22,148 @@ namespace Mistaken.CustomClasses.API
     [PublicAPI]
 public abstract class CustomClass : ICustomClass
 {
+    /// <inheritdoc />
     public abstract string Name { get; }
+
+    /// <inheritdoc />
     public abstract string DisplayName { get; }
-    public abstract uint Type { get; }
+
+    /// <inheritdoc />
+    public abstract uint Id { get; }
+
+    /// <inheritdoc />
     public abstract string Description { get; }
+
+    /// <inheritdoc />
     public virtual int MaxHealth { get; set; }
+
+    /// <inheritdoc />
     public abstract RoleType Role { get; }
+
+    /// <inheritdoc />
     public abstract Dictionary<AmmoType, ushort> Ammo { get; set; }
+
+    /// <inheritdoc />
     public abstract ItemType[] Inventory { get; set; }
-    public virtual string[] CustomItems { get; set; }
+
+    /// <inheritdoc />
+    public virtual string[] CustomItems { get; set; } = Array.Empty<string>();
+
+    /// <inheritdoc />
     public abstract SpawnProperties SpawnPositions { get; }
+
+    /// <inheritdoc />
     public abstract Misc.PlayerInfoColorTypes Color { get; }
+
+    /// <inheritdoc />
     public virtual KeycardPermissions ClassPermissions { get; set; } = KeycardPermissions.None;
+
+    /// <inheritdoc />
     public abstract bool SetLatestUnitName { get; }
+
+    /// <inheritdoc />
     public virtual Vector3 Scale { get; set; } = Vector3.one;
+    /// <summary>
+    /// Gets the <see cref="Player"/> playing as this class.
+    /// </summary>
     public Player Player { get; protected set; }
 
-    public static Dictionary<int,CustomClass> Instances { get; } = new Dictionary<int, CustomClass>();
-    //TODO: Dodać roundloggera
-    public CustomClass(Player player)
+    /// <summary>
+    /// Dictionary of all the instances of <see cref="CustomClass"/>.
+    /// </summary>
+    public static Dictionary<int,CustomClass> Instances { get; set; }
+
+    /// <summary>
+    /// Initializes the class and spawns the specified player as custom class.
+    /// </summary>
+    /// <param name="player">Player to spawn as this custom class</param>
+    protected CustomClass(Player player)
     {
-        Log.Debug("Creating new instance of " + GetType().Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
+        if (player == null)
+        {
+            Exiled.API.Features.Log.Debug($"Player is null, skipping creation of {Name}", PluginHandler.Instance.Config.DebugOutput);
+            return;
+        }
+        Exiled.API.Features.Log.Debug("Creating new instance of " + Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
         Player = player;
-        if (Instances.ContainsKey(player.Id))
+        Log($"Spawning {Player.Nickname} as {Name}");
+        Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
+        if (Instances.ContainsKey(Player.Id))
         {
-            Instances[player.Id].OnRemoved();
+            Instances[Player.Id].OnRemoved();
         }
-        Log.Debug("Adding " + GetType().Name + " to instances", PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Adding " + GetType().Name + " to instances", PluginHandler.Instance.Config.DebugOutput);
         Instances.Add(Player.Id, this);
+        Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
         Player.SetRole(Role,SpawnReason.None);
+        Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
         Player.ClearInventory();
-        player.AddItem(Inventory);
-        //TODO: Dodać wsparcie dla itemków customowych z exiled
-        //player.AddItem(CustomItems);
+        Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
+        if(Inventory is not null && Inventory.Length > 0)
+            Player.AddItem(Inventory);
+        Exiled.API.Features.Log.Debug("Adding custom items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
+        if(CustomItems is not null && CustomItems.Length > 0)
+            foreach (var customItem in CustomItems)
+            {
+                if(Exiled.CustomItems.API.Features.CustomItem.TryGet(customItem, out var item))
+                    item.Give(Player);
+            }
+        Exiled.API.Features.Log.Debug("Removing player's role from info area", PluginHandler.Instance.Config.DebugOutput);
         Player.InfoArea &= ~PlayerInfoArea.Role;
-        Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
-        foreach (var ammoKv in Ammo)
-        {
-            Player.SetAmmo(ammoKv.Key, ammoKv.Value);
-        }
-        Player.MaxHealth = MaxHealth;
-        player.Scale = Scale;
+        Exiled.API.Features.Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
+        if(Ammo is not null && Ammo.Count > 0)
+            foreach (var ammoKv in Ammo)
+            {
+                Player.SetAmmo(ammoKv.Key, ammoKv.Value);
+            }
+        Exiled.API.Features.Log.Debug("Setting player's max health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
+        if(MaxHealth > 0)
+            Player.MaxHealth = MaxHealth;
+        Exiled.API.Features.Log.Debug("Setting player's scale to " + Scale, PluginHandler.Instance.Config.DebugOutput);
+        Player.Scale = Scale;
         if (SetLatestUnitName)
         {
             //TODO: Sprawdzić sensowność kodu
-            var prevRole = player.Role.Type;
+            var prevRole = Player.Role.Type;
             var old = Respawning.RespawnManager.CurrentSequence();
             Respawning.RespawnManager.Singleton._curSequence = Respawning.RespawnManager.RespawnSequencePhase.SpawningSelectedTeam;
-            player.Role.Type = this.Role == RoleType.None ? RoleType.ClassD : this.Role;
-            player.ReferenceHub.characterClassManager.NetworkCurSpawnableTeamType = 2;
-            player.UnitName = Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Last().UnitName;
+            Player.Role.Type = this.Role == RoleType.None ? RoleType.ClassD : this.Role;
+            Player.ReferenceHub.characterClassManager.NetworkCurSpawnableTeamType = 2;
+            Player.UnitName = Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Last().UnitName;
             Respawning.RespawnManager.Singleton._curSequence = old;
             if (this.Role == RoleType.None)
-                player.Role.Type = prevRole;
+                Player.Role.Type = prevRole;
         }
-        Log.Debug("Setting permissions", PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Setting permissions", PluginHandler.Instance.Config.DebugOutput);
         if(ClassPermissions != KeycardPermissions.None)
-            player.SetSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS, ClassPermissions);
-        CustomInfoHandler.Set(Player,$"cc-{Type}",$"<color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
-        Player.SetGUI($"cc-{Type}-name",PseudoGUIPosition.BOTTOM,$"Grasz jako <color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
-        Player.SetGUI($"cc-{Type}-desc",PseudoGUIPosition.MIDDLE,$"<size=150%><color={Misc.AllowedColors[Color]}>{DisplayName}</color></size>\n{Description}",15f);
+            Player.SetSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS, ClassPermissions);
+        CustomInfoHandler.Set(Player,$"cc-{Id}",$"<color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
+        Player.SetGUI($"cc-{Id}-name",PseudoGUIPosition.BOTTOM,$"Grasz jako <color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
+        Player.SetGUI($"cc-{Id}-desc",PseudoGUIPosition.MIDDLE,$"<size=150%><color={Misc.AllowedColors[Color]}>{DisplayName}</color></size>\n{Description}",15f);
         Timing.CallDelayed(0.5f, () =>
         {
             Player.Position = GetSpawnPosition();
             OnSpawned();
         });
-        Log.Debug("Finished creating new instance of " + GetType().Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Finished creating new instance of " + GetType().Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
         #region Events
         Exiled.Events.Handlers.Player.Destroying += OnInternalDestroying;
         Exiled.Events.Handlers.Player.Died += OnInternalDied;
         Exiled.Events.Handlers.Player.ChangingRole += OnInternalChangingRole;
         Exiled.Events.Handlers.Player.Hurting += OnInternalHurting;
         #endregion
-        Log.Debug("Subscribed to events", PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Subscribed to events", PluginHandler.Instance.Config.DebugOutput);
     }
+
+    /// <summary>
+    /// Logs message to console and round log.
+    /// </summary>
+    /// <param name="message">A message to log.</param>
+    protected void Log(string message)
+    {
+        RLogger.Log("CUSTOMCLASSES",Name,message);
+    }
+    
     /// <summary>
     /// Gets a random <see cref="Vector3"/> from <see cref="SpawnProperties"/>.
     /// </summary>
@@ -138,7 +208,12 @@ public abstract class CustomClass : ICustomClass
 
 
     //TODO: Określić lepiej nazwę dla funkcji kiedy gracz (customowa klasa) zabije innego gracza
-    protected virtual void OnKilledAnotherPlayer(Player target, CustomDamageHandler damageHandler)
+    /// <summary>
+    /// Called when the player kills another player.
+    /// </summary>
+    /// <param name="target">Killed player.</param>
+    /// <param name="damageHandler">Damage handler.</param>
+    protected virtual void OnKill(Player target, CustomDamageHandler damageHandler)
     {
         
     }
@@ -151,13 +226,26 @@ public abstract class CustomClass : ICustomClass
     {
         
     }
+    /// <summary>
+    /// Called when the player hurts another player.
+    /// </summary>
+    /// <param name="target">Victim.</param>
+    /// <param name="damageHandler">Damage Handler.</param>
     protected virtual void OnDamageDealt(Player target, CustomDamageHandler damageHandler)
     {
     }
+    /// <summary>
+    /// Called when the player is hurt.
+    /// </summary>
+    /// <param name="attacker">Attacker.</param>
+    /// <param name="damageHandler">Damage Handler.</param>
     protected virtual void OnDamageReceived(Player attacker, CustomDamageHandler damageHandler)
     {
     }
 
+    /// <summary>
+    /// Called when the player spawns.
+    /// </summary>
     protected virtual void OnSpawned()
     {
         
@@ -187,7 +275,7 @@ public abstract class CustomClass : ICustomClass
             OnRemoved();
         }
         else if(Player.Id == ev.Killer?.Id)
-            OnKilledAnotherPlayer(ev.Target,ev.Handler);
+            OnKill(ev.Target,ev.Handler);
     }
 
     private void OnInternalDestroying(DestroyingEventArgs ev)
@@ -196,11 +284,15 @@ public abstract class CustomClass : ICustomClass
             OnRemoved();
     }
 
+    /// <summary>
+    /// Called when the player is removed from role.
+    /// </summary>
     protected virtual void OnRemoved()
     {
-        Log.Debug("Removing instance of " + GetType().Name + " for " + Player.Nickname, PluginHandler.Instance.Config.DebugOutput);
-        CustomInfoHandler.Set(Player,$"cc-{Type}",null);
-        Player.SetGUI($"cc-{Type}-name",PseudoGUIPosition.BOTTOM,null);
+        Log($"Removing {Player.Nickname} from {Name}");
+        Exiled.API.Features.Log.Debug("Removing instance of " + GetType().Name + " for " + Player.Nickname, PluginHandler.Instance.Config.DebugOutput);
+        CustomInfoHandler.Set(Player,$"cc-{Id}",null);
+        Player.SetGUI($"cc-{Id}-name",PseudoGUIPosition.BOTTOM,null);
         if(ClassPermissions != KeycardPermissions.None)
             Player.RemoveSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS);
         Player.InfoArea |= PlayerInfoArea.Role;
@@ -209,7 +301,7 @@ public abstract class CustomClass : ICustomClass
         Exiled.Events.Handlers.Player.ChangingRole -= OnInternalChangingRole;
         Exiled.Events.Handlers.Player.Hurting -= OnInternalHurting;
         Instances.Remove(Player.Id);
-        Log.Debug("Unsubscribed from events", PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Unsubscribed from events", PluginHandler.Instance.Config.DebugOutput);
     }
 
 }
