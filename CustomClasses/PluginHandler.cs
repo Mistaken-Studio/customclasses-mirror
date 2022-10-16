@@ -33,7 +33,7 @@ namespace Mistaken.CustomClasses
                     if (type.IsSubclassOf(typeof(CustomClass)) && !type.IsAbstract)
                     {
                         var customClass = (CustomClass)Activator.CreateInstance(type, new[] { (object)null });
-                        type.GetProperties(BindingFlags.Public | BindingFlags.Static).First(x => x.Name == nameof(CustomClass.Instances)).SetValue(null,new Dictionary<int,CustomClass>());
+                        type.BaseType.GetProperties(BindingFlags.Public | BindingFlags.Static).First(x => x.Name == nameof(CustomClass.Instances)).SetValue(null,new Dictionary<int,CustomClass>());
                         CustomClasses.Add(customClass.Id, type);
                     }
                 }
