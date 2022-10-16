@@ -25,7 +25,7 @@ namespace Mistaken.CustomClasses
             Instance = null;
         }
 
-        public AutoUpdateConfig AutoUpdateConfig { get; } = new AutoUpdateConfig()
+        public AutoUpdateConfig AutoUpdateConfig => new AutoUpdateConfig()
         {
             Url = "https://git.mistaken.pl/api/v4/projects/117",
             Type = SourceType.GITLAB,
