@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using CommandSystem;
 using Exiled.API.Features;
 using JetBrains.Annotations;
@@ -22,8 +23,9 @@ namespace Mistaken.CustomClasses.Commands
             {
                 return new[] { "Usage: setcustomrole [Player] [ID of role]" };
             }
-            var player = Player.Get(args[0]);
-            if(player == null)
+
+            var list = GetPlayers(args[0]);
+            if(list.Count == 0)
             {
                 return new[] { "Player not found" };
             }
@@ -31,7 +33,7 @@ namespace Mistaken.CustomClasses.Commands
             {
                 return new[] { "Invalid role ID" };
             }
-            Activator.CreateInstance(PluginHandler.CustomClasses[roleID],new object[]{ player });
+            Activator.CreateInstance(PluginHandler.CustomClasses[roleID],new object[]{ list[0] });
             success = true;
             return new[] { "Player set to custom role" };
             
