@@ -1,9 +1,11 @@
 ﻿using Exiled.API.Interfaces;
 
-namespace Mistaken.CustomClasses;
-
-internal class Config : IConfig
+namespace Mistaken.CustomClasses
 {
-    public bool IsEnabled { get; set; } = true;
-    public bool DebugOutput { get; set; } = false;
+    internal class Config : IConfig
+    {
+        public bool IsEnabled { get; set; } = true;
+        public bool DebugOutput { get; set; } = false;
+    }
 }
+

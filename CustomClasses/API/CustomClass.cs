@@ -15,9 +15,9 @@ using Mistaken.CustomClasses.API.Interfaces;
 using UnityEngine;
 using CustomInfoHandler = Mistaken.API.Handlers.CustomInfoHandler;
 
-namespace Mistaken.CustomClasses.API;
-
-[PublicAPI]
+namespace Mistaken.CustomClasses.API
+{
+    [PublicAPI]
 public abstract class CustomClass : ICustomClass
 {
     public abstract string Name { get; }
@@ -200,4 +200,7 @@ public abstract class CustomClass : ICustomClass
         Instances.Remove(Player.Id);
         Log.Debug("Unsubscribed from events", PluginHandler.Instance.Config.DebugOutput);
     }
+
+}
+
 }
