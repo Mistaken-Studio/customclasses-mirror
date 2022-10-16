@@ -96,26 +96,28 @@ public abstract class CustomClass : ICustomClass
         Instances.Add(Player.Id, this);
         Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
         Player.SetRole(Role,SpawnReason.None);
-        Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
         Player.ClearInventory();
         Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
-        Player.AddItem(Inventory);
-        Exiled.API.Features.Log.Debug("Adding items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
-        foreach (var customItem in CustomItems)
-        {
-            if(Exiled.CustomItems.API.Features.CustomItem.TryGet(customItem, out var item))
-                item.Give(Player);
-        }
+        if(Inventory is not null && Inventory.Length > 0)
+            Player.AddItem(Inventory);
         Exiled.API.Features.Log.Debug("Adding custom items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
-        Player.InfoArea &= ~PlayerInfoArea.Role;
+        if(CustomItems is not null && CustomItems.Length > 0)
+            foreach (var customItem in CustomItems)
+            {
+                if(Exiled.CustomItems.API.Features.CustomItem.TryGet(customItem, out var item))
+                    item.Give(Player);
+            }
         Exiled.API.Features.Log.Debug("Removing player's role from info area", PluginHandler.Instance.Config.DebugOutput);
+        Player.InfoArea &= ~PlayerInfoArea.Role;
         Exiled.API.Features.Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
         foreach (var ammoKv in Ammo)
         {
             Player.SetAmmo(ammoKv.Key, ammoKv.Value);
         }
-        Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
-        Player.MaxHealth = MaxHealth;
+        Exiled.API.Features.Log.Debug("Setting player's max health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
+        if(MaxHealth > 0)
+            Player.MaxHealth = MaxHealth;
         Exiled.API.Features.Log.Debug("Setting player's scale to " + Scale, PluginHandler.Instance.Config.DebugOutput);
         Player.Scale = Scale;
         if (SetLatestUnitName)
