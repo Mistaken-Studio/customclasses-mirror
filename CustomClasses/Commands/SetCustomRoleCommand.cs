@@ -1,11 +1,14 @@
 ﻿using System;
 using CommandSystem;
 using Exiled.API.Features;
+using JetBrains.Annotations;
 using Mistaken.API.Commands;
 using Mistaken.CustomClasses.API;
 
 namespace Mistaken.CustomClasses.Commands
 {
+    [CommandHandler(typeof(RemoteAdminCommandHandler))]
+    [PublicAPI]
     public class SetCustomRoleCommand : IBetterCommand, IUsageProvider
     {
         public override string Command => "setcustomrole";
