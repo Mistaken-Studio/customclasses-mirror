@@ -137,6 +137,11 @@ public abstract class CustomClass : ICustomClass
     {
         
     }
+    /// <summary>
+    /// Called when the player dies.
+    /// </summary>
+    /// <param name="killer">Killer who killed player.</param>
+    /// <param name="damageHandler">Damage Handler.</param>
     protected virtual void OnDied(Player killer, CustomDamageHandler damageHandler)
     {
         
