@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Exiled.API.Features;
 using Exiled.Loader;
 using JetBrains.Annotations;
@@ -31,7 +32,8 @@ namespace Mistaken.CustomClasses
                 {
                     if (type.IsSubclassOf(typeof(CustomClass)) && !type.IsAbstract)
                     {
-                        var customClass = (CustomClass)Activator.CreateInstance(type,new [] { (object)null });
+                        var customClass = (CustomClass)Activator.CreateInstance(type, new[] { (object)null });
+                        type.GetProperties(BindingFlags.Public | BindingFlags.Static).First(x => x.Name == nameof(CustomClass.Instances)).SetValue(null,new Dictionary<int,CustomClass>());
                         CustomClasses.Add(customClass.Id, type);
                     }
                 }

@@ -71,7 +71,7 @@ public abstract class CustomClass : ICustomClass
     /// <summary>
     /// Dictionary of all the instances of <see cref="CustomClass"/>.
     /// </summary>
-    public static Dictionary<int,CustomClass> Instances { get; } = new Dictionary<int, CustomClass>();
+    public static Dictionary<int,CustomClass> Instances { get; set; }
 
     /// <summary>
     /// Initializes the class and spawns the specified player as custom class.
@@ -84,30 +84,39 @@ public abstract class CustomClass : ICustomClass
             Exiled.API.Features.Log.Debug($"Player is null, skipping creation of {Name}", PluginHandler.Instance.Config.DebugOutput);
             return;
         }
-        Exiled.API.Features.Log.Debug("Creating new instance of " + GetType().Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
+        Exiled.API.Features.Log.Debug("Creating new instance of " + Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
         Log($"Spawning {Player.Nickname} as {Name}");
         Player = player;
+        Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
         if (Instances.ContainsKey(player.Id))
         {
             Instances[player.Id].OnRemoved();
         }
         Exiled.API.Features.Log.Debug("Adding " + GetType().Name + " to instances", PluginHandler.Instance.Config.DebugOutput);
         Instances.Add(Player.Id, this);
+        Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
         Player.SetRole(Role,SpawnReason.None);
+        Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
         Player.ClearInventory();
+        Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
         player.AddItem(Inventory);
+        Exiled.API.Features.Log.Debug("Adding items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
         foreach (var customItem in CustomItems)
         {
             if(Exiled.CustomItems.API.Features.CustomItem.TryGet(customItem, out var item))
                 item.Give(player);
         }
+        Exiled.API.Features.Log.Debug("Adding custom items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
         Player.InfoArea &= ~PlayerInfoArea.Role;
+        Exiled.API.Features.Log.Debug("Removing player's role from info area", PluginHandler.Instance.Config.DebugOutput);
         Exiled.API.Features.Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
         foreach (var ammoKv in Ammo)
         {
             Player.SetAmmo(ammoKv.Key, ammoKv.Value);
         }
+        Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
         Player.MaxHealth = MaxHealth;
+        Exiled.API.Features.Log.Debug("Setting player's scale to " + Scale, PluginHandler.Instance.Config.DebugOutput);
         player.Scale = Scale;
         if (SetLatestUnitName)
         {
