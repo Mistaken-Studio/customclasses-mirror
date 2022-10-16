@@ -85,12 +85,12 @@ public abstract class CustomClass : ICustomClass
             return;
         }
         Exiled.API.Features.Log.Debug("Creating new instance of " + Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
-        Log($"Spawning {Player.Nickname} as {Name}");
         Player = player;
+        Log($"Spawning {Player.Nickname} as {Name}");
         Exiled.API.Features.Log.Debug("Setting player's role to " + Role, PluginHandler.Instance.Config.DebugOutput);
-        if (Instances.ContainsKey(player.Id))
+        if (Instances.ContainsKey(Player.Id))
         {
-            Instances[player.Id].OnRemoved();
+            Instances[Player.Id].OnRemoved();
         }
         Exiled.API.Features.Log.Debug("Adding " + GetType().Name + " to instances", PluginHandler.Instance.Config.DebugOutput);
         Instances.Add(Player.Id, this);
@@ -99,12 +99,12 @@ public abstract class CustomClass : ICustomClass
         Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
         Player.ClearInventory();
         Exiled.API.Features.Log.Debug("Clearing player's inventory", PluginHandler.Instance.Config.DebugOutput);
-        player.AddItem(Inventory);
+        Player.AddItem(Inventory);
         Exiled.API.Features.Log.Debug("Adding items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
         foreach (var customItem in CustomItems)
         {
             if(Exiled.CustomItems.API.Features.CustomItem.TryGet(customItem, out var item))
-                item.Give(player);
+                item.Give(Player);
         }
         Exiled.API.Features.Log.Debug("Adding custom items to player's inventory", PluginHandler.Instance.Config.DebugOutput);
         Player.InfoArea &= ~PlayerInfoArea.Role;
@@ -117,23 +117,23 @@ public abstract class CustomClass : ICustomClass
         Exiled.API.Features.Log.Debug("Setting player's health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
         Player.MaxHealth = MaxHealth;
         Exiled.API.Features.Log.Debug("Setting player's scale to " + Scale, PluginHandler.Instance.Config.DebugOutput);
-        player.Scale = Scale;
+        Player.Scale = Scale;
         if (SetLatestUnitName)
         {
             //TODO: Sprawdzić sensowność kodu
-            var prevRole = player.Role.Type;
+            var prevRole = Player.Role.Type;
             var old = Respawning.RespawnManager.CurrentSequence();
             Respawning.RespawnManager.Singleton._curSequence = Respawning.RespawnManager.RespawnSequencePhase.SpawningSelectedTeam;
-            player.Role.Type = this.Role == RoleType.None ? RoleType.ClassD : this.Role;
-            player.ReferenceHub.characterClassManager.NetworkCurSpawnableTeamType = 2;
-            player.UnitName = Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Last().UnitName;
+            Player.Role.Type = this.Role == RoleType.None ? RoleType.ClassD : this.Role;
+            Player.ReferenceHub.characterClassManager.NetworkCurSpawnableTeamType = 2;
+            Player.UnitName = Respawning.RespawnManager.Singleton.NamingManager.AllUnitNames.Last().UnitName;
             Respawning.RespawnManager.Singleton._curSequence = old;
             if (this.Role == RoleType.None)
-                player.Role.Type = prevRole;
+                Player.Role.Type = prevRole;
         }
         Exiled.API.Features.Log.Debug("Setting permissions", PluginHandler.Instance.Config.DebugOutput);
         if(ClassPermissions != KeycardPermissions.None)
-            player.SetSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS, ClassPermissions);
+            Player.SetSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS, ClassPermissions);
         CustomInfoHandler.Set(Player,$"cc-{Id}",$"<color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
         Player.SetGUI($"cc-{Id}-name",PseudoGUIPosition.BOTTOM,$"Grasz jako <color={Misc.AllowedColors[Color]}>{DisplayName}</color>");
         Player.SetGUI($"cc-{Id}-desc",PseudoGUIPosition.MIDDLE,$"<size=150%><color={Misc.AllowedColors[Color]}>{DisplayName}</color></size>\n{Description}",15f);
