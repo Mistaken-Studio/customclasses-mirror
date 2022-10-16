@@ -111,10 +111,11 @@ public abstract class CustomClass : ICustomClass
         Exiled.API.Features.Log.Debug("Removing player's role from info area", PluginHandler.Instance.Config.DebugOutput);
         Player.InfoArea &= ~PlayerInfoArea.Role;
         Exiled.API.Features.Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
-        foreach (var ammoKv in Ammo)
-        {
-            Player.SetAmmo(ammoKv.Key, ammoKv.Value);
-        }
+        if(Ammo is not null && Ammo.Count > 0)
+            foreach (var ammoKv in Ammo)
+            {
+                Player.SetAmmo(ammoKv.Key, ammoKv.Value);
+            }
         Exiled.API.Features.Log.Debug("Setting player's max health to " + MaxHealth, PluginHandler.Instance.Config.DebugOutput);
         if(MaxHealth > 0)
             Player.MaxHealth = MaxHealth;
