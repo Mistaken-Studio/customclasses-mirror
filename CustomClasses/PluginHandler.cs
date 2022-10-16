@@ -12,7 +12,7 @@ namespace Mistaken.CustomClasses
     {
         public override string Author => "Mistaken Devs";
         public override string Name => "CustomClasses";
-        public override string Prefix  => "MCustomClasses";
+        public override string Prefix => "MCustomClasses";
         public override Version RequiredExiledVersion  => new Version(5, 2, 2);
         internal static PluginHandler Instance { get; set; }
         public override void OnEnabled()
