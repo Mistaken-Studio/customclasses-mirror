@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Exiled.API.Enums;
 using Exiled.API.Features;
@@ -46,7 +47,7 @@ public abstract class CustomClass : ICustomClass
     public abstract ItemType[] Inventory { get; set; }
 
     /// <inheritdoc />
-    public virtual string[] CustomItems { get; set; }
+    public virtual string[] CustomItems { get; set; } = Array.Empty<string>();
 
     /// <inheritdoc />
     public abstract SpawnProperties SpawnPositions { get; }
