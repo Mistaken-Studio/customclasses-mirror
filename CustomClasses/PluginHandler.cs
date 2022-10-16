@@ -8,6 +8,7 @@ using MEC;
 using Mistaken.API.Extensions;
 using Mistaken.CustomClasses.API;
 using Mistaken.Updater.API.Config;
+using UnityEngine;
 
 namespace Mistaken.CustomClasses
 {
@@ -30,7 +31,7 @@ namespace Mistaken.CustomClasses
                 {
                     if (type.IsSubclassOf(typeof(CustomClass)) && !type.IsAbstract)
                     {
-                        var customClass = (CustomClass)Activator.CreateInstance(type,null);
+                        var customClass = (CustomClass)Activator.CreateInstance(type,new [] { (object)null });
                         CustomClasses.Add(customClass.Id, type);
                     }
                 }

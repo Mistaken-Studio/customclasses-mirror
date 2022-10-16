@@ -28,7 +28,7 @@ namespace Mistaken.CustomClasses.Commands
             {
                 return new[] { "Invalid role ID" };
             }
-            Activator.CreateInstance(PluginHandler.CustomClasses[roleID],player);
+            Activator.CreateInstance(PluginHandler.CustomClasses[roleID],new object[]{ player });
             success = true;
             return new[] { "Player set to custom role" };
             
