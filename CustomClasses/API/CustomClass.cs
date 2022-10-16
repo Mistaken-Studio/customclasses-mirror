@@ -28,6 +28,7 @@ public abstract class CustomClass : ICustomClass
     public abstract RoleType Role { get; }
     public abstract Dictionary<AmmoType, ushort> Ammo { get; set; }
     public abstract ItemType[] Inventory { get; set; }
+    public virtual string[] CustomItems { get; set; }
     public abstract SpawnProperties SpawnPositions { get; }
     public abstract Misc.PlayerInfoColorTypes Color { get; }
     public virtual KeycardPermissions ClassPermissions { get; set; } = KeycardPermissions.None;
@@ -36,6 +37,7 @@ public abstract class CustomClass : ICustomClass
     public Player Player { get; protected set; }
 
     public static Dictionary<int,CustomClass> Instances { get; } = new Dictionary<int, CustomClass>();
+    //TODO: Dodać roundloggera
     public CustomClass(Player player)
     {
         Log.Debug("Creating new instance of " + GetType().Name + " for " + player.Nickname, PluginHandler.Instance.Config.DebugOutput);
@@ -49,6 +51,9 @@ public abstract class CustomClass : ICustomClass
         Player.SetRole(Role,SpawnReason.None);
         Player.ClearInventory();
         player.AddItem(Inventory);
+        //TODO: Dodać wsparcie dla itemków customowych z exiled
+        //player.AddItem(CustomItems);
+        Player.InfoArea &= ~PlayerInfoArea.Role;
         Log.Debug("Setting ammo", PluginHandler.Instance.Config.DebugOutput);
         foreach (var ammoKv in Ammo)
         {
@@ -198,6 +203,7 @@ public abstract class CustomClass : ICustomClass
         Player.SetGUI($"cc-{Type}-name",PseudoGUIPosition.BOTTOM,null);
         if(ClassPermissions != KeycardPermissions.None)
             Player.RemoveSessionVariable(SessionVarType.BUILTIN_DOOR_ACCESS);
+        Player.InfoArea |= PlayerInfoArea.Role;
         Exiled.Events.Handlers.Player.Destroying -= OnInternalDestroying;
         Exiled.Events.Handlers.Player.Died -= OnInternalDied;
         Exiled.Events.Handlers.Player.ChangingRole -= OnInternalChangingRole;
