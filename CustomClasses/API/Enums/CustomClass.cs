@@ -4,6 +4,7 @@
     {
         FacilityManager = 0,
         DeputyFacilityManager = 1,
+        GuardCommander = 2,
     }  
 }
 
