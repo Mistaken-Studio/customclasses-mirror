@@ -2,7 +2,7 @@
 {
     public enum CustomClass : uint
     {
-    
+        FacilityManager = 0,
     }  
 }
 
