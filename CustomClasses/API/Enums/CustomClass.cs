@@ -3,6 +3,7 @@
     public enum CustomClass : uint
     {
         FacilityManager = 0,
+        DeputyFacilityManager = 1,
     }  
 }
 
