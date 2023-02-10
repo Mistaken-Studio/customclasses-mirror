@@ -1,42 +1,47 @@
 ﻿using System;
-using System.Collections.Generic;
 using CommandSystem;
-using Exiled.API.Features;
 using JetBrains.Annotations;
-using Mistaken.API.Commands;
-using Mistaken.CustomClasses.API;
+using PluginAPI.Core;
 
 namespace Mistaken.CustomClasses.Commands
 {
     [CommandHandler(typeof(RemoteAdminCommandHandler))]
-    [PublicAPI]
-    public class SetCustomRoleCommand : IBetterCommand, IUsageProvider
+    public class SetCustomRoleCommand : ICommand, IUsageProvider
     {
-        public override string Command => "setcustomrole";
-        public string[] Usage => new[] { "%player%","ID of role" };
-        public override string Description => "Sets a player to specified custom role";
-
-        public override string[] Execute(ICommandSender sender, string[] args, out bool success)
+        public bool Execute(ArraySegment<string> arguments, ICommandSender sender, out string response)
         {
-            success = false;
-            if(args.Length != 2)
+            if (arguments.Count != 2)
             {
-                return new[] { "Usage: setcustomrole [Player] [ID of role]" };
+                response = "Usage: setcustomrole [Player] [ID of role]";
+                return false;
             }
 
-            var list = Utils.RAUtils.ProcessPlayerIdOrNamesList(new ArraySegment<string>(args), 0, out _);
-            if(list.Count == 0)
+            var list = Utils.RAUtils.ProcessPlayerIdOrNamesList(arguments, 0, out var args);
+            if (list.Count == 0)
             {
-                return new[] { "Player not found" };
+                response = "Player not found";
+                return false;
             }
-            if(!uint.TryParse(args[1], out uint roleID))
+
+            if (!uint.TryParse(args[0], out uint roleID))
             {
-                return new[] { "Invalid role ID" };
+                response = "Invalid role ID";
+                return false;
             }
-            Activator.CreateInstance(PluginHandler.CustomClasses[roleID],new object[]{ Player.Get(list[0]) });
-            success = true;
-            return new[] { "Player set to custom role" };
+            if(!PluginMain.CustomClasses.ContainsKey(roleID))
+            {
+                response = "Role ID not found";
+                return false;
+            }
+            Activator.CreateInstance(PluginMain.CustomClasses[roleID], new object[] { Player.Get(list[0]) });
             
+            response = "Player set to custom role";
+            return true;
         }
+
+        public string Command => "setcustomrole";
+        public string[] Aliases { get; } = new []{"scr"};
+        public string[] Usage => new[] { "%player%","ID of role" };
+        public string Description => "Sets a player to specified custom role";
     }
 }

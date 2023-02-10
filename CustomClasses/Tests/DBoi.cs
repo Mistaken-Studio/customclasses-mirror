@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
-using Exiled.API.Enums;
-using Exiled.API.Features;
-using Exiled.API.Features.Spawn;
-using Mistaken.CustomClasses.API;
+﻿using System;
+using System.Collections.Generic;
+using Mistaken.CustomClasses.API.Enums;
+using PlayerRoles;
+using PluginAPI.Core;
+using UnityEngine;
+using CustomClass = Mistaken.CustomClasses.API.CustomClass;
 
 namespace Mistaken.CustomClasses.Tests
 {
@@ -16,22 +18,15 @@ namespace Mistaken.CustomClasses.Tests
         public override string DisplayName => "DBoi";
         public override uint Id => 1;
         public override string Description => "DBoi";
-        public override RoleType Role => RoleType.ClassD;
-        public override Dictionary<AmmoType, ushort> Ammo { get; set; }
-        public override ItemType[] Inventory { get; set; }
+        public override SpawnStage SpawnStage { get; } = SpawnStage.RoundStart;
+        public override Predicate<Player>? SpawnCondition { get; } = player => player.Role == RoleTypeId.ClassD;
+        public override int MaxCount { get; } = 1;
+        public override RoleTypeId Role => RoleTypeId.ClassD;
+        public override Dictionary<ItemType, ushort> Ammo { get; set; }
+        public override ItemType[] Inventory { get; set; } = new[] { ItemType.KeycardO5 };
 
-        public override SpawnProperties SpawnPositions => new SpawnProperties()
-        {
-            RoleSpawnPoints = new List<RoleSpawnPoint>()
-            {
-                new RoleSpawnPoint()
-                {
-                    Chance = 100f,
-                    Role = RoleType.Scientist
-                }
-            }
-        };
 
+        public override Vector3 SpawnPositions { get; } = Vector3.zero;
         public override Misc.PlayerInfoColorTypes Color => Misc.PlayerInfoColorTypes.Cyan;
         public override bool SetLatestUnitName => false;
     }
