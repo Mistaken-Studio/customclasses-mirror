@@ -5,7 +5,7 @@ using PluginAPI.Core;
 namespace Mistaken.CustomClasses.API;
 
 /// <summary>
-/// Represents a spawn data of a <see cref="CustomClass"/>.
+/// Represents a spawn data of a <see cref="CustomClass"/>. 
 /// </summary>
 public class SpawnData
 {
