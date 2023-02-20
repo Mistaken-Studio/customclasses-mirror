@@ -33,7 +33,7 @@ namespace Mistaken.CustomClasses.Commands
                 response = "Role ID not found";
                 return false;
             }
-            Activator.CreateInstance(PluginMain.CustomClasses[roleID], new object[] { Player.Get(list[0]) });
+            Activator.CreateInstance(PluginMain.CustomClasses[roleID].type, new object[] { Player.Get(list[0]) });
             
             response = "Player set to custom role";
             return true;

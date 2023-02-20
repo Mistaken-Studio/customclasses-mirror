@@ -15,6 +15,7 @@ using PluginAPI.Core.Attributes;
 using PluginAPI.Enums;
 using Respawning.NamingRules;
 using UnityEngine;
+using YamlDotNet.Serialization;
 
 namespace Mistaken.CustomClasses.API
 {
@@ -27,6 +28,10 @@ public abstract class CustomClass
     private Guid _internalId;
 
     /// <summary>
+    /// Gets the unique ID of the class.
+    /// </summary>
+    public abstract uint Id { get; }
+    /// <summary>
     /// Gets the name of the class.
     /// </summary>
     public abstract string Name { get; }
@@ -37,23 +42,16 @@ public abstract class CustomClass
     public abstract string DisplayName { get; }
 
     /// <summary>
-    /// Gets the unique ID of the class.
+    /// Gets the <see cref="SpawnData"/> of the class.
     /// </summary>
-    public abstract uint Id { get; }
+    public abstract SpawnData SpawnData { get; }
 
     /// <summary>
     /// Gets the description of the class.
     /// </summary>
     public abstract string Description { get; }
     
-    /// <summary>
-    /// Gets the <see cref="SpawnStage"/> of the class.
-    /// </summary>
-    public abstract SpawnStage SpawnStage { get; }
-    /// <summary>
-    /// Gets the spawn conditions of the class.
-    /// </summary>
-    public abstract Predicate<Player>? SpawnCondition { get; }
+    
     
     /// <summary>
     /// Gets the maximum amount of players that can be this class.
@@ -77,7 +75,7 @@ public abstract class CustomClass
     /// <summary>
     /// Sets the potential spawn locations of the class.
     /// </summary>
-    public abstract Vector3 SpawnPositions { get; }
+    public abstract Vector3[] SpawnPositions { get; }
 
     /// <summary>
     /// Sets the color of the class.
@@ -102,13 +100,14 @@ public abstract class CustomClass
     /// <summary>
     /// Gets the <see cref="Player"/> playing as this class.
     /// </summary>
+    [YamlIgnore]
     public Player Player { get; protected set; }
 
     /// <summary>
     /// Initializes the class and spawns the specified player as custom class.
     /// </summary>
     /// <param name="player">Player to spawn as this custom class</param>
-    protected CustomClass(Player player)
+    protected CustomClass(Player? player)
     {
         if (player == null)
         {
